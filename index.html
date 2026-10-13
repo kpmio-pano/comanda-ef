@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тренажер: Ефективна vs Неефективна команда</title>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-bg: #eef2f5;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --effective-color: #2ec4b6;
+            --effective-hover: #20a396;
+            --ineffective-color: #e71d36;
+            --ineffective-hover: #c4142b;
+            --accent-gold: #ff9f1c;
+            --border-radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Comfortaa', cursive;
+            color: #1e293b;
+            margin-bottom: 15px;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: #64748b;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Game Screen */
+        .game-screen {
+            display: none;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 10px;
+            background-color: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #3b82f6, var(--effective-color));
+            transition: width 0.3s ease;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+
+        .card-box {
+            min-height: 180px;
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 16px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            line-height: 1.5;
+            margin-bottom: 25px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
+        }
+
+        .choice-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .choice-btn {
+            padding: 16px 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            color: white;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-effective {
+            background-color: var(--effective-color);
+        }
+
+        .btn-effective:hover {
+            background-color: var(--effective-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-ineffective {
+            background-color: var(--ineffective-color);
+        }
+
+        .btn-ineffective:hover {
+            background-color: var(--ineffective-hover);
+            transform: translateY(-2px);
+        }
+
+        .feedback {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: 700;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .feedback.correct {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .feedback.incorrect {
+            background-color: #ffe4e6;
+            color: #9f1239;
+            border: 1px solid #fecdd3;
+        }
+
+        .next-btn {
+            margin-top: 15px;
+            display: none;
+            width: 100%;
+        }
+
+        /* End Screen */
+        .end-screen {
+            display: none;
+        }
+
+        .score-badge {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            margin: 10px 0;
+        }
+
+        /* Summary Container */
+        .summary-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 25px 0;
+            text-align: left;
+        }
+
+        .summary-box {
+            padding: 20px;
+            border-radius: 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .summary-box h3 {
+            font-size: 1rem;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .effective-box {
+            border-top: 4px solid var(--effective-color);
+        }
+
+        .ineffective-box {
+            border-top: 4px solid var(--ineffective-color);
+        }
+
+        .summary-box ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .summary-box li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 10px;
+            font-size: 0.88rem;
+            line-height: 1.4;
+            color: #334155;
+        }
+
+        .effective-box li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--effective-color);
+            font-weight: bold;
+        }
+
+        .ineffective-box li::before {
+            content: "✕";
+            position: absolute;
+            left: 0;
+            color: var(--ineffective-color);
+            font-weight: bold;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 650px) {
+            .summary-container {
+                grid-template-columns: 1fr;
+            }
+            .choice-buttons {
+                grid-template-columns: 1fr;
+            }
+            .container {
+                padding: 20px;
+            }
+            .card-box {
+                font-size: 1.05rem;
+                min-height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- START SCREEN -->
+    <div id="start-screen">
+        <h1>Команда мрії 🤝</h1>
+        <p class="subtitle">Інтерактивний тренажер для асистентів вихователів.<br>Визначайте дії, якості та критерії ефективної та неефективної команди.</p>
+        <button class="btn" onclick="startGame()">Розпочати гру</button>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="game-screen" class="game-screen">
+        <div class="stats">
+            <span id="card-counter">Картка 1 з 19</span>
+            <span id="score-counter">Бали: 0</span>
+        </div>
+        <div class="progress-bar-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+
+        <div id="card-box" class="card-box"></div>
+
+        <div id="choice-buttons" class="choice-buttons">
+            <button class="choice-btn btn-effective" onclick="makeChoice('effective')">
+                <span>🌱 Ефективна команда</span>
+            </button>
+            <button class="choice-btn btn-ineffective" onclick="makeChoice('ineffective')">
+                <span>⚠️ Неефективна команда</span>
+            </button>
+        </div>
+
+        <div id="feedback" class="feedback"></div>
+        <button id="next-btn" class="btn next-btn" onclick="nextCard()">Наступна картка ➔</button>
+    </div>
+
+    <!-- END SCREEN -->
+    <div id="end-screen" class="end-screen">
+        <h2>Вітаємо! Вправу завершено 🎉</h2>
+        <p class="subtitle">Ваш результат розуміння командних процесів:</p>
+        <div id="score-badge" class="score-badge">0 / 19</div>
+        <p id="feedback-message" style="margin-bottom: 20px; font-weight: 700;"></p>
+
+        <!-- SUMMARY LISTS -->
+        <div class="summary-container">
+            <div class="summary-box effective-box">
+                <h3>🌱 Ознаки ефективної команди</h3>
+                <ul id="effective-list"></ul>
+            </div>
+            <div class="summary-box ineffective-box">
+                <h3>⚠️ Ознаки неефективної команди</h3>
+                <ul id="ineffective-list"></ul>
+            </div>
+        </div>
+
+        <button class="btn" onclick="startGame()">Зіграти знову 🔄</button>
+    </div>
+</div>
+
+<script>
+    const dataset = [
+        // Ефективна команда
+        { text: "Визначає реальні цілі (такі, які можливо досягти).", type: "effective", tip: "Орієнтація на вимірні та здійсненні завдання." },
+        { text: "Спільні цінності та бачення розвитку.", type: "effective", tip: "Спільні орієнтири допомагають рухатися в одному напрямку." },
+        { text: "Спільна діяльність, участь усіх учасників команди у напрацюванні рішень, спільна відповідальність.", type: "effective", tip: "Синергія та взаємна відповідальність — основа згуртованості." },
+        { text: "Рівномірний та зрозумілий розподіл обов’язків.", type: "effective", tip: "Кожен розуміє свою роль та внесок у спільну справу." },
+        { text: "Особистісна неформальна взаємодія між членами колективу.", type: "effective", tip: "Теплий мікроклімат будує дружні та підтримки стосунки." },
+        { text: "Взаємодоповнюючий (за професійними та психологічними характеристиками) склад групи, взаємний вплив.", type: "effective", tip: "Різноманітність сильних сторін підсилює загальну ефективність." },
+        { text: "Обмін критичними міркуваннями й досвідом.", type: "effective", tip: "Конструктивна дискусія допомагає знаходити найкращі рішення." },
+        { text: "Ефективно використовує свої ресурси.", type: "effective", tip: "Раціональне використання потенціалу запобігає вигоранню." },
+        { text: "Стосунки, побудовані на довірі.", type: "effective", tip: "Довіра знімає напругу та полегшує комунікацію." },
+        { text: "Швидко реагує в різних ситуаціях (по мірі необхідності).", type: "effective", tip: "Адаптивність є ключем до подолання кризових моментів." },
+        { text: "Вірить у свої можливості.", type: "effective", tip: "Впевненість у командних силах надихає на досягнення." },
+
+        // Неефективна команда
+        { text: "Приховує ідеї, замовчує помилки та уникає прохань про допомогу.", type: "ineffective", tip: "Страх покарання або осуду вбиває довіру та розвиток." },
+        { text: "Перекладає провину на інших і відраховується фразами «це не моя задача» чи «мені не казали».", type: "ineffective", tip: "Відсутність особистої відповідальності руйнує співпрацю." },
+        { text: "Створює хаос через відсутність координації або страждає від мікроменеджменту, що вбиває ініціативу.", type: "ineffective", tip: "Надмірний контроль або безлад пригнічують ініціативу." },
+        { text: "Замість фахових дискусій вдається до особистих образ і прихованих інтриг.", type: "ineffective", tip: "Токсичне середовище виснажує працівників." },
+        { text: "Працює суто «від дзвінка до дзвінка», не проявляє інтересу до результатів та швидко змінює склад через звільнення.", type: "ineffective", tip: "Байдужність та формалізм призводять до вигорання та плинності кадрів." },
+        { text: "Працює без чіткого розуміння того, що саме вважається фінальним успіхом.", type: "ineffective", tip: "Без чіткого орієнтиру робота перетворюється на хаотичні дії." },
+        { text: "Діє неузгоджено через відсутність спільних орієнтирів, не розуміє місії компанії та орієнтується на протилежні пріоритети.", type: "ineffective", tip: "Різні цілі створюють внутрішні конфлікти." },
+        { text: "Нераціонально витрачає або марнує ресурси: постійно виходить за межі бюджету, втрачає час на зайву бюрократію чи невиправдані процеси та спалює людський потенціал.", type: "ineffective", tip: "Марнування людських та матеріальних ресурсів призводить до зневіри." }
+    ];
+
+    let currentCards = [];
+    let currentIndex = 0;
+    let score = 0;
+
+    function startGame() {
+        currentCards = [...dataset].sort(() => Math.random() - 0.5);
+        currentIndex = 0;
+        score = 0;
+
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('end-screen').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'block';
+
+        showCard();
+    }
+
+    function showCard() {
+        const card = currentCards[currentIndex];
+        document.getElementById('card-box').innerText = card.text;
+        document.getElementById('card-counter').innerText = `Картка ${currentIndex + 1} з ${currentCards.length}`;
+        document.getElementById('score-counter').innerText = `Бали: ${score}`;
+        
+        const progress = ((currentIndex) / currentCards.length) * 100;
+        document.getElementById('progress-bar').style.width = `${progress}%`;
+
+        document.getElementById('feedback').style.display = 'none';
+        document.getElementById('next-btn').style.display = 'none';
+        document.getElementById('choice-buttons').style.display = 'grid';
+    }
+
+    function makeChoice(selectedType) {
+        const card = currentCards[currentIndex];
+        const feedbackEl = document.getElementById('feedback');
+        const choiceBtns = document.getElementById('choice-buttons');
+        const nextBtn = document.getElementById('next-btn');
+
+        choiceBtns.style.display = 'none';
+
+        if (selectedType === card.type) {
+            score++;
+            feedbackEl.className = 'feedback correct';
+            feedbackEl.innerHTML = `✅ <strong>Правильно!</strong><br>${card.tip}`;
+        } else {
+            feedbackEl.className = 'feedback incorrect';
+            feedbackEl.innerHTML = `❌ <strong>Невірно.</strong> Це ознака <strong>${card.type === 'effective' ? 'ефективної' : 'неефективної'}</strong> команди.<br>${card.tip}`;
+        }
+
+        feedbackEl.style.display = 'block';
+        nextBtn.style.display = 'block';
+        document.getElementById('score-counter').innerText = `Бали: ${score}`;
+    }
+
+    function nextCard() {
+        currentIndex++;
+        if (currentIndex < currentCards.length) {
+            showCard();
+        } else {
+            showEndScreen();
+        }
+    }
+
+    function showEndScreen() {
+        document.getElementById('game-screen').style.display = 'none';
+        document.getElementById('end-screen').style.display = 'block';
+
+        document.getElementById('score-badge').innerText = `${score} / ${currentCards.length}`;
+        
+        const percentage = (score / currentCards.length) * 100;
+        const messageEl = document.getElementById('feedback-message');
+
+        if (percentage === 100) {
+            messageEl.innerText = "🌟 Досконалий результат! Ви безпомилково відрізняєте здорову командну взаємодію від токсичної!";
+            messageEl.style.color = "#2ec4b6";
+        } else if (percentage >= 75) {
+            messageEl.innerText = "👍 Чудовий результат! Ви добре розумієте принципи формування ефективної команди!";
+            messageEl.style.color = "#3b82f6";
+        } else {
+            messageEl.innerText = "📚 Непоганий результат! Перегляньте підсумковий список ознак для закріплення.";
+            messageEl.style.color = "#ff9f1c";
+        }
+
+        // Populate summary lists
+        const effectiveList = document.getElementById('effective-list');
+        const ineffectiveList = document.getElementById('ineffective-list');
+        
+        effectiveList.innerHTML = '';
+        ineffectiveList.innerHTML = '';
+
+        dataset.forEach(item => {
+            const li = document.createElement('li');
+            li.innerText = item.text;
+            if (item.type === 'effective') {
+                effectiveList.appendChild(li);
+            } else {
+                ineffectiveList.appendChild(li);
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
